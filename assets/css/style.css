@@ -3,13 +3,13 @@ html {
 }
 
 body {
-    background-image: url("../images/deathstar.jpg");
+    background: url("../images/deathstar.jpg") no-repeat center center fixed;
     background-size: cover;
-    background-repeat: no-repeat;
+    /*background-repeat: no-repeat;*/
     color: #FFF;
     font-family: "Orbitron";
-   	text-align: center;
-   	letter-spacing: 3px;
+    text-align: center;
+    letter-spacing: 3px;
     /* font-family: "Bungee"; */
 }
 
@@ -18,30 +18,35 @@ body {
 }
 
 .game {
+    /*clear: both;*/
     display: grid;
     grid-template-rows: .5fr 80px 1fr 80px;
     grid-template-columns: auto;
     grid-row-gap: 15px;
+    grid-column-gap: 10px;
     justify-items: stretch;
     align-items: stretch;
     margin-top: 50px;
 }
 
 .character {
-    align-self: stretch;
+    align-self: end;
     grid-row-start: 1;
 }
 
 .character h3 {
-	margin-bottom: 20px;
-	font-size: 18px;
+    margin-bottom: 20px;
+    font-size: 18px;
+    /*width: 100%;*/
 }
 
 .character img {
-	border: 1px solid #FFF;
-	border-radius: 10px;
-	width: 175px;
-	height: 175px;
+    border: 1px solid #FFF;
+    border-radius: 10px;
+    /*width: 80%;*/
+    width: 175px;
+    height: 175px;
+
 }
 
 .instructions {
@@ -59,9 +64,10 @@ body {
     grid-area: 3 / 3 / 3 / 4;
 }
 
-.attacker, .defender h2 {
-	font-size: 30px;
-	text-decoration: underline;
+.attacker,
+.defender h2 {
+    font-size: 30px;
+    text-decoration: underline;
 }
 
 .buttons {
@@ -69,15 +75,14 @@ body {
 }
 
 .buttons button {
-	font-family : inherit;
-	font-size: 20px;
-	font-weight: bold;
-	letter-spacing: 3px;
-	text-shadow: #000 2px 2px 2px;
-	color: #FFF;
-	background-color: #292929;
-	padding: 10px 20px 10px 20px;
-	margin: 20px;
-	border-radius: 5px;
-
+    font-family: inherit;
+    font-size: 20px;
+    font-weight: bold;
+    letter-spacing: 3px;
+    text-shadow: #000 2px 2px 2px;
+    color: #FFF;
+    background-color: #292929;
+    padding: 10px 20px 10px 20px;
+    margin: 20px;
+    border-radius: 5px;
 }
