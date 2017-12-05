@@ -38,6 +38,7 @@ body {
 }
 
 .character img {
+	border: 1px solid #FFF;
 	border-radius: 10px;
 	width: 175px;
 	height: 175px;
