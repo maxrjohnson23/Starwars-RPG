@@ -1,3 +1,12 @@
-# Star Wars RPG
+# Star Wars RPG Game using jQuery
 
-## A Star Wars RPG game using jQuery
+## Topics Covered
+* Javascript
+  * Object literals
+  * Object constructors
+  * Arrays
+  * DOM manipulation
+  * Event Handlers
+  * Audio files
+* CSS Grid
+
