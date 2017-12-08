@@ -32,18 +32,21 @@ var darthMaul = new Character("Darth Maul", 180, 6, 10);
 
 var Game = function () {
     this.characters = [obiwan, lukeSkywalker, darthSidious, darthMaul];
+    // Beginning state of the game
     var currentState = new Start(this);
+    var attacker;
+    var defender;
 
+    // Handles the state changes by replacing the object
     this.change = function (state) {
         currentState = state;
         currentState.go();
     };
 
+    // Begin the game at the default Start state
     this.start = function () {
         currentState.go();
     };
-
-
 };
 
 
@@ -60,6 +63,8 @@ var screenHandler = {
         $(".character").on("click", function (event) {
             // Move to attacker slot
             $(this).appendTo('.attacker');
+            game.attacker = $(this).text();
+            console.log(`Attacker: ${game.attacker}`);
             game.transition();
         });
     },
@@ -80,11 +85,15 @@ var screenHandler = {
         $(".character").off("click");        
     },
     displayAttackBtn: function() {
-        $("#attack-btn").removeAttr("disabled");
+        var attackBtn = $("#attack-btn");
+        attackBtn.removeAttr("disabled");
+        attackBtn.on("click", function() {
+            game.initiateAttack();
+        };
     }
 };
 
-// Keep track of game states
+// Keep track of game states and transitions using objects
 var Start = function (game) {
     this.game = game;
 
@@ -144,7 +153,7 @@ var Battle = function () {
     
         this.go = function () {
             screenHandler.setInstructions("FIGHT!!");
-            screenHandler.displayAttackBtn();            
+            screenHandler.enableAttackBtn();            
         }
         this.transition = function () {
        
