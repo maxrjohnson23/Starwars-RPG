@@ -17,15 +17,15 @@ var Game = function () {
     // Begin game in Start state
     var currentState = new Start(this);
     // Initialize Characters
-    var obiwan = new Character("obiwan", "Obi-wan Kenobi", 120, 6, 10);
-    var lukeSkywalker = new Character("lukeSkywalker", "Luke Skywalker", 100, 6, 10);
-    var darthSidious = new Character("darthSidious", "Darth Sidious", 150, 6, 10);
-    var darthMaul = new Character("darthMaul", "Darth Maul", 180, 6, 10);
+    var obiwan = new Character("obiwan", "Obi-wan Kenobi", 120, 6, 12);
+    var lukeSkywalker = new Character("lukeSkywalker", "Luke Skywalker", 100, 6, 15);
+    var darthSidious = new Character("darthSidious", "Darth Sidious", 150, 6, 25);
+    var darthMaul = new Character("darthMaul", "Darth Maul", 180, 6, 20);
     this.characters = [obiwan, lukeSkywalker, darthSidious, darthMaul];
     this.attacker = "";
     this.defender = "";
 
-    this.findCharacter = function(charId) {
+    this.findCharacter = function (charId) {
         return this.characters.find(a => a.id === charId);
     }
 
@@ -54,9 +54,9 @@ var screenHandler = {
         $(".character").on("click", function (event) {
             // Move to attacker slot
             $(this).appendTo('.attacker');
-    
+
             // Set attacker to game object
-            game.attacker = game.findCharacter($(this).attr("data-char")); 
+            game.attacker = game.findCharacter($(this).attr("data-char"));
             console.log(`Character chosen: ${game.attacker.name}`);
             state.transition();
         });
@@ -65,7 +65,7 @@ var screenHandler = {
         // All non-selected characters
         $(".character:not(.attacker .character)").on("click", function () {
             $(this).appendTo(".defender");
-            game.defender = game.findCharacter($(this).attr("data-char"));             
+            game.defender = game.findCharacter($(this).attr("data-char"));
             console.log(`Opponent chosen: ${game.defender.name}`);
             state.transition();
         });
@@ -97,6 +97,9 @@ var screenHandler = {
     removeCharacter: function (index) {
         // Remove defeated character
         $(`div[data-char='${index}']`).remove();
+    },
+    disableAttack: function() {
+        $("#attack-btn").attr("disabled", "disabled");
     }
 };
 
@@ -169,7 +172,7 @@ var Battle = function () {
     this.attack = function () {
         console.log(`Battle between: ${game.attacker.name} and ${game.defender.name}`);
         game.defender.healthPoints -= game.attacker.attackPower;
-        game.attacker.healthPoints -= game.defender.attackPower;
+        game.attacker.healthPoints -= game.defender.counterAttackPower;
         game.attacker.attackPower += game.attacker.attackMultiplier;
         console.log(`Attacker AP: ${game.attacker.attackPower}`);
         console.log(`Defender HP: ${game.defender.healthPoints}`);
@@ -181,9 +184,9 @@ var Battle = function () {
 
     this.removeCharacter = function (char) {
         for (var i = 0; i < game.characters.length; i++) {
-            if (game.characters[i].name === char.name) {
+            if (game.characters[i].id === char.id) {
                 game.characters.splice(i, 1);
-                screenHandler.removeCharacter(i);
+                screenHandler.removeCharacter(char.id);
                 break;
             }
         }
@@ -213,13 +216,18 @@ var Win = function () {
 
     this.go = function () {
         screenHandler.setInstructions("You Win!!!");
-
+        screenHandler.disableAttack();
     }
 
 }
 
 var Loss = function () {
+    this.game = game;
 
+    this.go = function () {
+        screenHandler.setInstructions("You Lose!!!");
+        screenHandler.disableAttack();
+    }
 }
 
 var game;
