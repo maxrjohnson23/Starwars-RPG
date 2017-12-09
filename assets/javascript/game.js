@@ -17,9 +17,9 @@ var Game = function () {
     // Begin game in Start state
     var currentState = new Start(this);
     // Initialize Characters
-    var obiwan = new Character("obiwan", "Obi-wan Kenobi", 120, 6, 12);
+    var obiwan = new Character("obiwan", "Obi-Wan Kenobi", 120, 6, 12);
     var lukeSkywalker = new Character("lukeSkywalker", "Luke Skywalker", 100, 6, 15);
-    var darthSidious = new Character("darthSidious", "Darth Sidious", 150, 6, 25);
+    var darthSidious = new Character("darthSidious", "Darth Sidious", 150, 6, 20);
     var darthMaul = new Character("darthMaul", "Darth Maul", 180, 6, 20);
     this.characters = [obiwan, lukeSkywalker, darthSidious, darthMaul];
     this.attacker = "";
@@ -43,10 +43,6 @@ var Game = function () {
 
 
 var screenHandler = {
-    resetGame: function () {
-        console.log("resetting game");
-        this.populatePlayerHealth();
-    },
     setInstructions: function (instr) {
         $(".instructions").text(instr);
     },
@@ -76,13 +72,9 @@ var screenHandler = {
             $(this).find(".hp").text(targetChar.healthPoints);
         });
     },
-    populateCharacterStats: function (game) {
-    //     <div class="character">
-    //     <h3 class="name"></h3>
-    //     <img src="assets/images/luke.png" alt="" class="char-image">
-    //     <p>hp: <span class="hp"></span></p>
-    // </div> 
-        game.characters.forEach(char => {
+    populateCharacters: function (characters) {
+
+        characters.forEach(char => {
             // Dynamically generate characters from the array
             var charDiv = $("<div>", {class:"character", "data-char":char.id});
             var charName = $("<h3>", {class: "name"}).text(char.name);
@@ -93,12 +85,6 @@ var screenHandler = {
             charDiv.append(charName).append(charImg).append(charP);
             $(".game").prepend(charDiv)
         });
-        // $(".character").each(function (index) {
-        //     $(this).find(".name").text(game.characters[index].name);
-        //     $(this).find(".hp").text(game.characters[index].healthPoints);
-        //     $(this).attr("data-char", game.characters[index].id);
-
-        // });
     },
     disableCharacterSelect: function () {
         $(".character").off("click");
@@ -115,7 +101,10 @@ var screenHandler = {
         $(`div[data-char='${index}']`).remove();
     },
     disableAttack: function() {
-        $("#attack-btn").attr("disabled", "disabled");
+        var attackBtn = $("#attack-btn");
+        attackBtn.attr("disabled", "disabled");
+        attackBtn.off("click");
+
     }
 };
 
@@ -130,8 +119,7 @@ var Start = function (game) {
             if (event.key === " ") {
                 // disable default browser scroll action
                 event.preventDefault();
-                screenHandler.populateCharacterStats(game);
-                // screenHandler.populateCharacterHealth();
+                screenHandler.populateCharacters(game.characters);
                 state.transition();
             }
         });
@@ -147,6 +135,8 @@ var PlayerSelect = function (game) {
     this.game = game;
 
     this.go = function () {
+        // Disable space to start
+        $(window).off("keydown");
         screenHandler.setInstructions("Choose Your Character");
         screenHandler.enablePlayerSelection(this);
     }
@@ -247,8 +237,19 @@ var Loss = function () {
     }
 }
 
+function reset() {
+    // Remove characters and window events, reset game object
+    $(".character").remove();
+    $(window).off("keydown");
+    game = new Game();
+    game.start();
+}
+
 var game;
 $(document).ready(function () {
+    $("#reset-btn").on("click", function() {
+        reset();
+    });
     game = new Game();
     game.start();
 
