@@ -31,14 +31,8 @@ var Game = function () {
     this.attacker = "";
     this.defender = "";
 
-    this.startBattle = function() {
-        // this.attacker = game[this.attacker];
-        // this.defender = game[this.defender];
+    this.attack = function () {
         console.log(`Battle between: ${this.attacker.name} and ${this.defender.name}`);
-        
-
-    }
-    this.attack = function() {
         this.defender.healthPoints -= this.attacker.attackPower;
         this.attacker.attackPower += this.attacker.attackMultiplier;
         console.log(`AP: ${this.attacker.attackPower}`);
@@ -73,7 +67,7 @@ var screenHandler = {
             var int = parseInt(($(this).attr("data-char")))
             console.log(int);
             game.attacker = game.characters[int];
-            console.log(`Character chosen: ${game.attacker.name}`);            
+            console.log(`Character chosen: ${game.attacker.name}`);
             state.transition();
         });
     },
@@ -83,7 +77,7 @@ var screenHandler = {
             $(this).appendTo(".defender");
             game.defender = game.characters[$(this).attr("data-char")];
             console.log(`Opponent chosen: ${game.defender.name}`);
-            state.transition();            
+            state.transition();
         });
     },
     populateCharacterStats: function () {
@@ -92,13 +86,15 @@ var screenHandler = {
         });
 
     },
-    disableCharacterSelect: function() {
-        $(".character").off("click");        
+    disableCharacterSelect: function () {
+        $(".character").off("click");
     },
-    displayAttackBtn: function() {
+    displayAttackBtn: function (game) {
         var attackButton = $("#attack-btn");
         attackButton.removeAttr("disabled");
-        attackButton.on("click", game.attack);
+        attackButton.on("click", function () {
+            game.attack();
+        });
     }
 };
 
@@ -109,8 +105,10 @@ var Start = function (game) {
     this.go = function () {
         screenHandler.setInstructions("Press <Space> to Begin");
         var state = this;
-        $(window).on("keyup", function (event) {
-            if(event.key === " ") {
+        $(window).on("keydown", function (event) {
+            if (event.key === " ") {
+                // disable default browser scroll action
+                event.preventDefault();
                 screenHandler.populateCharacterStats();
                 state.transition();
             }
@@ -160,18 +158,27 @@ var OpponentSelect = function (game) {
 
 var Battle = function () {
     this.game = game;
-    
-        this.go = function () {
-            screenHandler.setInstructions("FIGHT!!!");
-            screenHandler.displayAttackBtn();
-            game.startBattle();            
-        }
-        this.transition = function () {
-       
-            console.log("Transition from opponent select to battle");
-            //game.change(new OpponentSelect(game));
-            // if complete end, otherwise continue battle
-        }
+
+    this.go = function () {
+        screenHandler.setInstructions("FIGHT!!!");
+        screenHandler.displayAttackBtn(game);
+    }
+
+    this.attack = function () {
+        console.log(`Battle between: ${game.attacker.name} and ${game.defender.name}`);
+        game.defender.healthPoints -= game.attacker.attackPower;
+        game.attacker.attackPower += game.attacker.attackMultiplier;
+        console.log(`Attacker AP: ${game.attacker.attackPower}`);
+        console.log(`Defender HP: ${game.defender.healthPoints}`);
+    }
+
+    this.transition = function () {
+
+        console.log("Transition from opponent select to battle");
+        //game.change(new OpponentSelect(game));
+        // if complete end, otherwise continue battle
+    }
+
 }
 
 var Win = function () {
@@ -184,8 +191,6 @@ var Loss = function () {
 
 var game;
 $(document).ready(function () {
-    console.log("Starting game");
-    // game.startGame();
     game = new Game();
     game.start();
 
