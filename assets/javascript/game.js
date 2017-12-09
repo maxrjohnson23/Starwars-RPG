@@ -1,42 +1,32 @@
-// Register event handlers
-// $(document).ready(function() {
-//     console.log("Starting game");
-//     // game.startGame();
-//     var game = new Game();
-//     game.start();
 
-// });
-
-function Character(name, healthPoints, attackPower, counterAttackPower) {
+function Character(id, name, healthPoints, attackPower, counterAttackPower) {
+    this.id = id;
     this.name = name;
     this.healthPoints = healthPoints;
+    // Characters start with 0 AP and increase with each attack
     this.attackPower = attackPower;
     this.attackMultiplier = attackPower;
     this.counterAttackPower = counterAttackPower;
     this.selected = false;
-    // Characters start with 0 AP and increase with each attack
 
 }
 
 
-// Initialize Characters
 
 var Game = function () {
+    // Begin game in Start state
     var currentState = new Start(this);
-    var obiwan = new Character("Obi-wan Kenobi", 120, 6, 10);
-    var lukeSkywalker = new Character("Luke Skywalker", 100, 6, 10);
-    var darthSidious = new Character("Darth Sidious", 150, 6, 10);
-    var darthMaul = new Character("Darth Maul", 180, 6, 10);
+    // Initialize Characters
+    var obiwan = new Character("obiwan", "Obi-wan Kenobi", 120, 6, 10);
+    var lukeSkywalker = new Character("lukeSkywalker", "Luke Skywalker", 100, 6, 10);
+    var darthSidious = new Character("darthSidious", "Darth Sidious", 150, 6, 10);
+    var darthMaul = new Character("darthMaul", "Darth Maul", 180, 6, 10);
     this.characters = [obiwan, lukeSkywalker, darthSidious, darthMaul];
     this.attacker = "";
     this.defender = "";
 
-    this.attack = function () {
-        console.log(`Battle between: ${this.attacker.name} and ${this.defender.name}`);
-        this.defender.healthPoints -= this.attacker.attackPower;
-        this.attacker.attackPower += this.attacker.attackMultiplier;
-        console.log(`AP: ${this.attacker.attackPower}`);
-        console.log(`Defender HP: ${this.defender.healthPoints}`);
+    this.findCharacter = function(charId) {
+        return this.characters.find(a => a.id === charId);
     }
 
     this.change = function (state) {
@@ -64,9 +54,9 @@ var screenHandler = {
         $(".character").on("click", function (event) {
             // Move to attacker slot
             $(this).appendTo('.attacker');
-            var int = parseInt(($(this).attr("data-char")))
-            console.log(int);
-            game.attacker = game.characters[int];
+    
+            // Set attacker to game object
+            game.attacker = game.findCharacter($(this).attr("data-char")); 
             console.log(`Character chosen: ${game.attacker.name}`);
             state.transition();
         });
@@ -75,26 +65,38 @@ var screenHandler = {
         // All non-selected characters
         $(".character:not(.attacker .character)").on("click", function () {
             $(this).appendTo(".defender");
-            game.defender = game.characters[$(this).attr("data-char")];
+            game.defender = game.findCharacter($(this).attr("data-char"));             
             console.log(`Opponent chosen: ${game.defender.name}`);
             state.transition();
         });
     },
-    populateCharacterStats: function () {
-        $(".hp").each(function (index) {
-            $(this).text(game.characters[index].healthPoints);
+    populateCharacterHealth: function () {
+        $(".character").each(function (index) {
+            var targetChar = game.findCharacter($(this).attr("data-char"));
+            $(this).find(".hp").text(targetChar.healthPoints);
         });
+    },
+    populateCharacterStats: function () {
+        $(".character").each(function (index) {
+            $(this).find(".name").text(game.characters[index].name);
+            $(this).find(".hp").text(game.characters[index].healthPoints);
+            $(this).attr("data-char", game.characters[index].id);
 
+        });
     },
     disableCharacterSelect: function () {
         $(".character").off("click");
     },
-    displayAttackBtn: function (game) {
+    displayAttackBtn: function (state) {
         var attackButton = $("#attack-btn");
         attackButton.removeAttr("disabled");
         attackButton.on("click", function () {
-            game.attack();
+            state.attack();
         });
+    },
+    removeCharacter: function (index) {
+        // Remove defeated character
+        $(`div[data-char='${index}']`).remove();
     }
 };
 
@@ -110,6 +112,7 @@ var Start = function (game) {
                 // disable default browser scroll action
                 event.preventDefault();
                 screenHandler.populateCharacterStats();
+                // screenHandler.populateCharacterHealth();
                 state.transition();
             }
         });
@@ -119,7 +122,6 @@ var Start = function (game) {
         console.log("Starting the Game");
         game.change(new PlayerSelect(game));
     }
-
 }
 
 var PlayerSelect = function (game) {
@@ -161,27 +163,58 @@ var Battle = function () {
 
     this.go = function () {
         screenHandler.setInstructions("FIGHT!!!");
-        screenHandler.displayAttackBtn(game);
+        screenHandler.displayAttackBtn(this);
     }
 
     this.attack = function () {
         console.log(`Battle between: ${game.attacker.name} and ${game.defender.name}`);
         game.defender.healthPoints -= game.attacker.attackPower;
+        game.attacker.healthPoints -= game.defender.attackPower;
         game.attacker.attackPower += game.attacker.attackMultiplier;
         console.log(`Attacker AP: ${game.attacker.attackPower}`);
         console.log(`Defender HP: ${game.defender.healthPoints}`);
+        screenHandler.populateCharacterHealth();
+        if (game.defender.healthPoints <= 0 || game.attacker.healthPoints <= 0) {
+            this.transition();
+        }
+    }
+
+    this.removeCharacter = function (char) {
+        for (var i = 0; i < game.characters.length; i++) {
+            if (game.characters[i].name === char.name) {
+                game.characters.splice(i, 1);
+                screenHandler.removeCharacter(i);
+                break;
+            }
+        }
     }
 
     this.transition = function () {
-
-        console.log("Transition from opponent select to battle");
-        //game.change(new OpponentSelect(game));
-        // if complete end, otherwise continue battle
+        // Player loses
+        if (game.attacker.healthPoints <= 0) {
+            game.change(new Loss(game));
+        } else if (game.defender.healthPoints <= 0) {
+            this.removeCharacter(game.defender);
+            // Opponents still remaining
+            if (game.characters.length > 1) {
+                console.log("Transition from opponent select to battle");
+                game.change(new OpponentSelect(game));
+            } else {
+                // All opponents defeated.  You win
+                game.change(new Win(game));
+            }
+        }
     }
 
 }
 
 var Win = function () {
+    this.game = game;
+
+    this.go = function () {
+        screenHandler.setInstructions("You Win!!!");
+
+    }
 
 }
 
