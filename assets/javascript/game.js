@@ -76,13 +76,29 @@ var screenHandler = {
             $(this).find(".hp").text(targetChar.healthPoints);
         });
     },
-    populateCharacterStats: function () {
-        $(".character").each(function (index) {
-            $(this).find(".name").text(game.characters[index].name);
-            $(this).find(".hp").text(game.characters[index].healthPoints);
-            $(this).attr("data-char", game.characters[index].id);
-
+    populateCharacterStats: function (game) {
+    //     <div class="character">
+    //     <h3 class="name"></h3>
+    //     <img src="assets/images/luke.png" alt="" class="char-image">
+    //     <p>hp: <span class="hp"></span></p>
+    // </div> 
+        game.characters.forEach(char => {
+            // Dynamically generate characters from the array
+            var charDiv = $("<div>", {class:"character", "data-char":char.id});
+            var charName = $("<h3>", {class: "name"}).text(char.name);
+            var charImg = $("<img>", {src: `assets/images/${char.id}.png`})
+            var charP = $("<p>").text("HP: ");
+            var charHpSpan = $("<span>", {class: "hp"}).text(char.healthPoints);
+            charP.append(charHpSpan);
+            charDiv.append(charName).append(charImg).append(charP);
+            $(".game").prepend(charDiv)
         });
+        // $(".character").each(function (index) {
+        //     $(this).find(".name").text(game.characters[index].name);
+        //     $(this).find(".hp").text(game.characters[index].healthPoints);
+        //     $(this).attr("data-char", game.characters[index].id);
+
+        // });
     },
     disableCharacterSelect: function () {
         $(".character").off("click");
@@ -114,7 +130,7 @@ var Start = function (game) {
             if (event.key === " ") {
                 // disable default browser scroll action
                 event.preventDefault();
-                screenHandler.populateCharacterStats();
+                screenHandler.populateCharacterStats(game);
                 // screenHandler.populateCharacterHealth();
                 state.transition();
             }
@@ -201,6 +217,7 @@ var Battle = function () {
             // Opponents still remaining
             if (game.characters.length > 1) {
                 console.log("Transition from opponent select to battle");
+                screenHandler.disableAttack();
                 game.change(new OpponentSelect(game));
             } else {
                 // All opponents defeated.  You win
