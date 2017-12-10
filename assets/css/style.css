@@ -20,7 +20,7 @@ body {
 .game {
     /*clear: both;*/
     display: grid;
-    grid-template-rows: 250px 80px 300px 80px;
+    grid-template-rows: 250px 80px 300px 30px 80px;
     grid-template-columns: repeat(4, 20vw);
     grid-row-gap: 15px;
     grid-column-gap: 10px;
@@ -47,7 +47,6 @@ body {
     /*width: 80%;*/
     width: 175px;
     height: 175px;
-
 }
 
 .instructions {
@@ -65,14 +64,17 @@ body {
     grid-area: 3 / 3 / 3 / 4;
 }
 
-.attacker h2,
-.defender h2 {
+.battle-text {
+    grid-area: 4 / 1 / 4 / 5;
+}
+
+.attacker h2, .defender h2 {
     font-size: 30px;
     text-decoration: underline;
 }
 
 .buttons {
-    grid-area: 4 / 1 / 4 / 5;
+    grid-area: 5 / 1 / 5 / 5;
 }
 
 .buttons button {
@@ -92,26 +94,31 @@ body {
     display: none;
 }
 
-.white {
-    color: #fff;
+.battle-text {
+    color: #cf1711;
 }
 
 .flash {
-	animation-duration: 4s;
-	animation-fill-mode: both;
-  	animation-name: flash;
+    animation-duration: 3s;
+    animation-fill-mode: both;
+    animation-name: flash;
+}
+
+.slow-flash {
+    animation-duration: 4s;
+    animation-fill-mode: both;
+    animation-name: flash;
 }
 
 .infinite {
-	animation-iteration-count: infinite;
+    animation-iteration-count: infinite;
 }
 
 @keyframes flash {
-    from, 50%, to {
-      opacity: 0;
+    from, to {
+        opacity: 0;
     }
-  
-    25%, 75% {
-      opacity: 1;
+    50% {
+        opacity: 1;
     }
-  }
+}

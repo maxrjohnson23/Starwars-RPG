@@ -23,10 +23,12 @@ var Game = function () {
     this.attacker = "";
     this.defender = "";
 
+    // Find character in array by id
     this.findCharacter = function (charId) {
         return this.characters.find(a => a.id === charId);
     }
 
+    // Transition between game states
     this.change = function (state) {
         currentState = state;
         currentState.go();
@@ -38,7 +40,7 @@ var Game = function () {
 
 };
 
-// Keep track of game states
+// Keep track of game states using objects with go() and transition() functions
 var Start = function (game) {
     this.game = game;
 
@@ -60,6 +62,7 @@ var Start = function (game) {
 
     this.transition = function () {
         console.log("Starting the Game");
+        console.log("**Hint** Choose Darth Maul and defeat Obi-Wan, Luke, and Darth Sidious in this order");
         game.change(new PlayerSelect(game));
     }
 }
@@ -111,12 +114,11 @@ var Battle = function () {
     }
 
     this.attack = function () {
-        console.log(`Battle between: ${game.attacker.name} and ${game.defender.name}`);
         game.defender.healthPoints -= game.attacker.attackPower;
         game.attacker.healthPoints -= game.defender.counterAttackPower;
         game.attacker.attackPower += game.attacker.attackMultiplier;
-        console.log(`Attacker AP: ${game.attacker.attackPower}`);
-        console.log(`Defender HP: ${game.defender.healthPoints}`);
+        console.log(`Battle: ${game.attacker.name} vs ${game.defender.name}`);
+        screenHandler.displayBattleText(`You attack ${game.defender.name} for ${game.attacker.attackPower} damage.  ${game.defender.name} counters for ${game.defender.counterAttackPower} damage.`);
         screenHandler.populateCharacterHealth();
         if (game.defender.healthPoints <= 0 || game.attacker.healthPoints <= 0) {
             this.transition();
@@ -137,13 +139,15 @@ var Battle = function () {
         // Player loses
         if (game.attacker.healthPoints <= 0) {
             // Player defeated, you lose
-            screenHandler.disableAttack();            
-            screenHandler.displayLoss();            
+            screenHandler.disableAttack();
+            screenHandler.displayLoss();
             // No transition, user must reset
+            console.log("*** Game Over ***");
         } else if (game.defender.healthPoints <= 0) {
             this.removeCharacter(game.defender);
-            // Opponents still remaining, continue battles
+            screenHandler.displayBattleText("");
             if (game.characters.length > 1) {
+                // Opponents still remaining, continue battles
                 console.log("Transition from opponent select to battle");
                 screenHandler.disableAttack();
                 game.change(new OpponentSelect(game));
@@ -152,20 +156,22 @@ var Battle = function () {
                 // No transition, user must reset
                 screenHandler.disableAttack();
                 screenHandler.displayWin();
+                console.log("*** Game Over ***");
             }
         }
+
     }
-    
+
 }
 
 var screenHandler = {
     setInstructions: function (instr) {
         $(".instructions").text(instr);
     },
-    startGameInstructions(){
+    startGameInstructions() {
         var instructions = $(".instructions");
-        instructions.css("color","#fff");
-        instructions.text("Press <Space> to Begin");        
+        instructions.css("color", "#fff");
+        instructions.text("Press <Space> to Begin");
     },
     enablePlayerSelection: function (state) {
         $(".character").on("click", function (event) {
@@ -197,11 +203,11 @@ var screenHandler = {
 
         characters.forEach(char => {
             // Dynamically generate characters from the array
-            var charDiv = $("<div>", {class:"character", "data-char":char.id});
-            var charName = $("<h3>", {class: "name"}).text(char.name);
-            var charImg = $("<img>", {src: `assets/images/${char.id}.png`})
+            var charDiv = $("<div>", { class: "character", "data-char": char.id });
+            var charName = $("<h3>", { class: "name" }).text(char.name);
+            var charImg = $("<img>", { src: `assets/images/${char.id}.png` })
             var charP = $("<p>").text("HP: ");
-            var charHpSpan = $("<span>", {class: "hp"}).text(char.healthPoints);
+            var charHpSpan = $("<span>", { class: "hp" }).text(char.healthPoints);
             charP.append(charHpSpan);
             charDiv.append(charName).append(charImg).append(charP);
             $(".game").prepend(charDiv)
@@ -222,20 +228,20 @@ var screenHandler = {
         // Remove defeated character by character id
         $(`div[data-char='${index}']`).remove();
     },
-    disableAttack: function() {
+    disableAttack: function () {
         var attackBtn = $("#attack-btn");
         attackBtn.attr("disabled", "disabled");
         attackBtn.off("click");
 
     },
-    showResetButton: function() {
+    showResetButton: function () {
         var resetBtn = $("#reset-btn")
         resetBtn.show();
-        resetBtn.on("click", function() {
+        resetBtn.on("click", function () {
             reset();
         });
     },
-    showAttackDefend: function() {
+    showAttackDefend: function () {
         $(".attacker").show();
         $(".defender").show();
     },
@@ -245,28 +251,36 @@ var screenHandler = {
     flashInstructionsOff() {
         $(".instructions").removeClass("flash infinite");
     },
-    displayWin: function() {
+    displayWin: function () {
         var instructions = $(".instructions");
-        instructions.text("You Win!!!");    
+        instructions.text("You Win!!!");
         // green    
-        instructions.css("color","#1ba71b");
+        instructions.css("color", "#1ba71b");
+        $(".attacker img").css("border-color","#1ba71b");
     },
-    displayLoss: function() {
+    displayLoss: function () {
         var instructions = $(".instructions");
-        instructions.text("You Lose!!!");     
+        instructions.text("You Lose!!!");
         // red   
-        instructions.css("color","#cf1711");
+        instructions.css("color", "#cf1711");
+        $(".attacker img").css("border-color","#cf1711");
+        
+    },
+    displayBattleText: function (message) {
+        $(".battle-text").text(message);
     }
 };
 
 function reset() {
     // Remove characters, events, buttons, and reset game object
+    console.log("*** Resetting Game ***");
     $(window).off("keydown");
     $(".character").remove();
     $("#attack-btn").hide();
     $("#reset-btn").hide();
     $(".attacker").hide();
     $(".defender").hide();
+    $(".battle-text").text("");
     game = new Game();
     game.start();
 }
