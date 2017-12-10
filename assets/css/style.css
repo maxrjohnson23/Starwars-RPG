@@ -20,7 +20,7 @@ body {
 .game {
     /*clear: both;*/
     display: grid;
-    grid-template-rows: .5fr 80px 1fr 80px;
+    grid-template-rows: 250px 80px 300px 80px;
     grid-template-columns: repeat(4, 20vw);
     grid-row-gap: 15px;
     grid-column-gap: 10px;
@@ -87,3 +87,31 @@ body {
     margin: 20px;
     border-radius: 5px;
 }
+
+.attacker, .defender, #attack-btn, #reset-btn {
+    display: none;
+}
+
+.white {
+    color: #fff;
+}
+
+.flash {
+	animation-duration: 4s;
+	animation-fill-mode: both;
+  	animation-name: flash;
+}
+
+.infinite {
+	animation-iteration-count: infinite;
+}
+
+@keyframes flash {
+    from, 50%, to {
+      opacity: 0;
+    }
+  
+    25%, 75% {
+      opacity: 1;
+    }
+  }

@@ -11,8 +11,6 @@ function Character(id, name, healthPoints, attackPower, counterAttackPower) {
 
 }
 
-
-
 var Game = function () {
     // Begin game in Start state
     var currentState = new Start(this);
@@ -40,11 +38,134 @@ var Game = function () {
 
 };
 
+// Keep track of game states
+var Start = function (game) {
+    this.game = game;
 
+    this.go = function () {
+        screenHandler.startGameInstructions();
+        var state = this;
+        $(window).on("keydown", function (event) {
+            if (event.key === " ") {
+                // disable default browser scroll action
+                event.preventDefault();
+                screenHandler.populateCharacters(game.characters);
+                screenHandler.showResetButton();
+                // Disable space to start
+                $(window).off("keydown");
+                state.transition();
+            }
+        });
+    }
+
+    this.transition = function () {
+        console.log("Starting the Game");
+        game.change(new PlayerSelect(game));
+    }
+}
+
+var PlayerSelect = function (game) {
+    this.game = game;
+
+    this.go = function () {
+        screenHandler.setInstructions("Choose Your Character");
+        screenHandler.flashInstructionsOff();
+        screenHandler.showAttackDefend();
+        screenHandler.enablePlayerSelection(this);
+    }
+
+    this.transition = function () {
+        console.log("Transition from player select to opponent select");
+        // Disable attacker selection
+        screenHandler.disableCharacterSelect();
+        // Move to Opponent selection state
+        game.change(new OpponentSelect(game));
+    }
+
+}
+
+var OpponentSelect = function (game) {
+    this.game = game;
+
+    this.go = function () {
+        screenHandler.setInstructions("Choose Your Opponent");
+        screenHandler.flashInstructionsOff();
+        screenHandler.enableOpponentSelection(this);
+    }
+    this.transition = function () {
+        // Disable opponent select
+        screenHandler.disableCharacterSelect();
+        console.log("Transition from opponent select to battle");
+        // Move to battle state
+        game.change(new Battle(game));
+    }
+}
+
+var Battle = function () {
+    this.game = game;
+
+    this.go = function () {
+        screenHandler.setInstructions("FIGHT!!!");
+        screenHandler.flashInstructionsOn();
+        screenHandler.displayAttackBtn(this);
+    }
+
+    this.attack = function () {
+        console.log(`Battle between: ${game.attacker.name} and ${game.defender.name}`);
+        game.defender.healthPoints -= game.attacker.attackPower;
+        game.attacker.healthPoints -= game.defender.counterAttackPower;
+        game.attacker.attackPower += game.attacker.attackMultiplier;
+        console.log(`Attacker AP: ${game.attacker.attackPower}`);
+        console.log(`Defender HP: ${game.defender.healthPoints}`);
+        screenHandler.populateCharacterHealth();
+        if (game.defender.healthPoints <= 0 || game.attacker.healthPoints <= 0) {
+            this.transition();
+        }
+    }
+
+    this.removeCharacter = function (char) {
+        for (var i = 0; i < game.characters.length; i++) {
+            if (game.characters[i].id === char.id) {
+                game.characters.splice(i, 1);
+                screenHandler.removeCharacter(char.id);
+                break;
+            }
+        }
+    }
+
+    this.transition = function () {
+        // Player loses
+        if (game.attacker.healthPoints <= 0) {
+            // Player defeated, you lose
+            screenHandler.disableAttack();            
+            screenHandler.displayLoss();            
+            // No transition, user must reset
+        } else if (game.defender.healthPoints <= 0) {
+            this.removeCharacter(game.defender);
+            // Opponents still remaining, continue battles
+            if (game.characters.length > 1) {
+                console.log("Transition from opponent select to battle");
+                screenHandler.disableAttack();
+                game.change(new OpponentSelect(game));
+            } else {
+                // All opponents defeated.  You win
+                // No transition, user must reset
+                screenHandler.disableAttack();
+                screenHandler.displayWin();
+            }
+        }
+    }
+    
+}
 
 var screenHandler = {
     setInstructions: function (instr) {
         $(".instructions").text(instr);
+    },
+    startGameInstructions(){
+        var instructions = $(".instructions");
+        instructions.css("color","#fff");
+        instructions.text("Press <Space> to Begin");        
     },
     enablePlayerSelection: function (state) {
         $(".character").on("click", function (event) {
@@ -98,7 +219,7 @@ var screenHandler = {
         });
     },
     removeCharacter: function (index) {
-        // Remove defeated character
+        // Remove defeated character by character id
         $(`div[data-char='${index}']`).remove();
     },
     disableAttack: function() {
@@ -117,136 +238,30 @@ var screenHandler = {
     showAttackDefend: function() {
         $(".attacker").show();
         $(".defender").show();
+    },
+    flashInstructionsOn() {
+        $(".instructions").addClass("flash infinite");
+    },
+    flashInstructionsOff() {
+        $(".instructions").removeClass("flash infinite");
+    },
+    displayWin: function() {
+        var instructions = $(".instructions");
+        instructions.text("You Win!!!");    
+        // green    
+        instructions.css("color","#1ba71b");
+    },
+    displayLoss: function() {
+        var instructions = $(".instructions");
+        instructions.text("You Lose!!!");     
+        // red   
+        instructions.css("color","#cf1711");
     }
 };
 
-// Keep track of game states
-var Start = function (game) {
-    this.game = game;
-
-    this.go = function () {
-        screenHandler.setInstructions("Press <Space> to Begin");
-        var state = this;
-        $(window).on("keydown", function (event) {
-            if (event.key === " ") {
-                // disable default browser scroll action
-                event.preventDefault();
-                screenHandler.populateCharacters(game.characters);
-                screenHandler.showResetButton();
-                // Disable space to start
-                $(window).off("keydown");
-                state.transition();
-            }
-        });
-    }
-
-    this.transition = function () {
-        console.log("Starting the Game");
-        game.change(new PlayerSelect(game));
-    }
-}
-
-var PlayerSelect = function (game) {
-    this.game = game;
-
-    this.go = function () {
-        screenHandler.setInstructions("Choose Your Character");
-        screenHandler.showAttackDefend();
-        screenHandler.enablePlayerSelection(this);
-    }
-
-    this.transition = function () {
-        console.log("Transition from player select to opponent select");
-        // Disable attacker selection
-        screenHandler.disableCharacterSelect();
-        // Move to Opponent selection state
-        game.change(new OpponentSelect(game));
-    }
-
-}
-
-var OpponentSelect = function (game) {
-    this.game = game;
-
-    this.go = function () {
-        screenHandler.setInstructions("Choose Your Opponent");
-        screenHandler.enableOpponentSelection(this);
-    }
-    this.transition = function () {
-        // Disable opponent select
-        screenHandler.disableCharacterSelect();
-        console.log("Transition from opponent select to battle");
-        // Move to battle state
-        game.change(new Battle(game));
-    }
-}
-
-var Battle = function () {
-    this.game = game;
-
-    this.go = function () {
-        screenHandler.setInstructions("FIGHT!!!");
-        screenHandler.displayAttackBtn(this);
-    }
-
-    this.attack = function () {
-        console.log(`Battle between: ${game.attacker.name} and ${game.defender.name}`);
-        game.defender.healthPoints -= game.attacker.attackPower;
-        game.attacker.healthPoints -= game.defender.counterAttackPower;
-        game.attacker.attackPower += game.attacker.attackMultiplier;
-        console.log(`Attacker AP: ${game.attacker.attackPower}`);
-        console.log(`Defender HP: ${game.defender.healthPoints}`);
-        screenHandler.populateCharacterHealth();
-        if (game.defender.healthPoints <= 0 || game.attacker.healthPoints <= 0) {
-            this.transition();
-        }
-    }
-
-    this.removeCharacter = function (char) {
-        for (var i = 0; i < game.characters.length; i++) {
-            if (game.characters[i].id === char.id) {
-                game.characters.splice(i, 1);
-                screenHandler.removeCharacter(char.id);
-                break;
-            }
-        }
-    }
-
-    this.transition = function () {
-        // Player loses
-        if (game.attacker.healthPoints <= 0) {
-            screenHandler.disableAttack();            
-            screenHandler.setInstructions("You Lose!!!");
-            // No transition, user must reset
-        } else if (game.defender.healthPoints <= 0) {
-            this.removeCharacter(game.defender);
-            // Opponents still remaining
-            if (game.characters.length > 1) {
-                console.log("Transition from opponent select to battle");
-                screenHandler.disableAttack();
-                game.change(new OpponentSelect(game));
-            } else {
-                // All opponents defeated.  You win
-                // No transition, user must reset
-                screenHandler.disableAttack();
-                screenHandler.setInstructions("You Win!!!");
-            }
-        }
-    }
-    
-}
-
-
-var Loss = function () {
-    this.game = game;
-
-    this.go = function () {
-        // No more transitions.  User must reset to play again
-    }
-}
-
 function reset() {
     // Remove characters, events, buttons, and reset game object
+    $(window).off("keydown");
     $(".character").remove();
     $("#attack-btn").hide();
     $("#reset-btn").hide();
