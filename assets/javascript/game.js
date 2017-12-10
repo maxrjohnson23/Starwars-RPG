@@ -92,6 +92,7 @@ var screenHandler = {
     displayAttackBtn: function (state) {
         var attackButton = $("#attack-btn");
         attackButton.removeAttr("disabled");
+        attackButton.show();
         attackButton.on("click", function () {
             state.attack();
         });
@@ -105,6 +106,17 @@ var screenHandler = {
         attackBtn.attr("disabled", "disabled");
         attackBtn.off("click");
 
+    },
+    showResetButton: function() {
+        var resetBtn = $("#reset-btn")
+        resetBtn.show();
+        resetBtn.on("click", function() {
+            reset();
+        });
+    },
+    showAttackDefend: function() {
+        $(".attacker").show();
+        $(".defender").show();
     }
 };
 
@@ -120,6 +132,9 @@ var Start = function (game) {
                 // disable default browser scroll action
                 event.preventDefault();
                 screenHandler.populateCharacters(game.characters);
+                screenHandler.showResetButton();
+                // Disable space to start
+                $(window).off("keydown");
                 state.transition();
             }
         });
@@ -135,9 +150,8 @@ var PlayerSelect = function (game) {
     this.game = game;
 
     this.go = function () {
-        // Disable space to start
-        $(window).off("keydown");
         screenHandler.setInstructions("Choose Your Character");
+        screenHandler.showAttackDefend();
         screenHandler.enablePlayerSelection(this);
     }
 
@@ -201,7 +215,9 @@ var Battle = function () {
     this.transition = function () {
         // Player loses
         if (game.attacker.healthPoints <= 0) {
-            game.change(new Loss(game));
+            screenHandler.disableAttack();            
+            screenHandler.setInstructions("You Lose!!!");
+            // No transition, user must reset
         } else if (game.defender.healthPoints <= 0) {
             this.removeCharacter(game.defender);
             // Opponents still remaining
@@ -211,45 +227,38 @@ var Battle = function () {
                 game.change(new OpponentSelect(game));
             } else {
                 // All opponents defeated.  You win
-                game.change(new Win(game));
+                // No transition, user must reset
+                screenHandler.disableAttack();
+                screenHandler.setInstructions("You Win!!!");
             }
         }
     }
-
+    
 }
 
-var Win = function () {
-    this.game = game;
-
-    this.go = function () {
-        screenHandler.setInstructions("You Win!!!");
-        screenHandler.disableAttack();
-    }
-
-}
 
 var Loss = function () {
     this.game = game;
 
     this.go = function () {
-        screenHandler.setInstructions("You Lose!!!");
-        screenHandler.disableAttack();
+        // No more transitions.  User must reset to play again
     }
 }
 
 function reset() {
-    // Remove characters and window events, reset game object
+    // Remove characters, events, buttons, and reset game object
     $(".character").remove();
-    $(window).off("keydown");
+    $("#attack-btn").hide();
+    $("#reset-btn").hide();
+    $(".attacker").hide();
+    $(".defender").hide();
     game = new Game();
     game.start();
 }
 
 var game;
 $(document).ready(function () {
-    $("#reset-btn").on("click", function() {
-        reset();
-    });
+
     game = new Game();
     game.start();
 
