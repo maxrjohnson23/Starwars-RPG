@@ -7,7 +7,6 @@ function Character(id, name, healthPoints, attackPower, counterAttackPower) {
     this.attackPower = attackPower;
     this.attackMultiplier = attackPower;
     this.counterAttackPower = counterAttackPower;
-    this.selected = false;
 
 }
 
