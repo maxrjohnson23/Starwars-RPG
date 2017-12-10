@@ -204,7 +204,7 @@ var screenHandler = {
             // Dynamically generate characters from the array
             var charDiv = $("<div>", { class: "character", "data-char": char.id });
             var charName = $("<h3>", { class: "name" }).text(char.name);
-            var charImg = $("<img>", { src: `assets/images/${char.id}.png` })
+            var charImg = $("<img>", { src: `assets/images/${char.id}.png`, alt: `${char.name}`})
             var charP = $("<p>").text("HP: ");
             var charHpSpan = $("<span>", { class: "hp" }).text(char.healthPoints);
             charP.append(charHpSpan);
