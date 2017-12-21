@@ -15,6 +15,8 @@
   * Element attributes
 * CSS Grid & Animations
 
+## [Play Now](https://maxrjohnson23.github.io/Starwars-RPG/ "Play Starwars RPG")
+
 ### Starting Screen
 ![SWRPG Screenshot](sample/game.jpg?raw=true "Starting Screen")
 
