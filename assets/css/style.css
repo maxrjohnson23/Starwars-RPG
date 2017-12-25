@@ -1,16 +1,16 @@
-html {
-    height: 100%;
-}
+html { 
+    position: relative; 
+    min-height: 100%; 
+} 
 
 body {
     background: url("../images/deathstar.jpg") no-repeat center center fixed;
     background-size: cover;
-    /*background-repeat: no-repeat;*/
     color: #FFF;
     font-family: "Orbitron";
     text-align: center;
     letter-spacing: 3px;
-    /* font-family: "Bungee"; */
+    margin-bottom: 60px;
 }
 
 .logo {
@@ -18,7 +18,6 @@ body {
 }
 
 .game {
-    /*clear: both;*/
     display: grid;
     grid-template-rows: 250px 80px 300px 30px 80px;
     grid-template-columns: repeat(4, 20vw);
@@ -26,7 +25,6 @@ body {
     grid-column-gap: 10px;
     justify-items: stretch;
     align-items: stretch;
-    /*margin-top: 50px;*/
 }
 
 .character {
